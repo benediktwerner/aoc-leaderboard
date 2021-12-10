@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8" />
+    <title>Unofficial AoC Leaderboard</title>
+    <link
+      href="https://fonts.googleapis.com/css?family=Source+Code+Pro:300&subset=latin,latin-ext"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="stylesheet alternate" type="text/css" href="highcontrast.css" title="High Contrast" />
+    <link rel="shortcut icon" href="favicon.png" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1 class="title-global">
+          <a href="https://adventofcode.com" target="_blank">Advent of Code</a> Unofficial Leaderboard
+        </h1>
+        <nav>
+          <ul id="nav-years">
+            Loading...
+          </ul>
+        </nav>
+      </div>
+      <div id="subtitle">
+        <h1 class="title-event">
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="title-event-wrap">/*</span>
+          <a id="year-link" href="https://adventofcode.com/2021" target="_blank">20??</a>
+          <span class="title-event-wrap">*/</span>
+        </h1>
+      </div>
+    </header>
+
+    <main id="main"></main>
+
+    <script>
+      const TEST_IMG =
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj4F548D8ABJUCbTs8eM0AAAAASUVORK5CYII=';
+
+      let selectedYear;
+      const data = new Map();
+
+      function h(selector, content, attrs) {
+        const [tagId, ...classes] = selector.split('.');
+        const [tag, id] = tagId.split('#');
+        const el = document.createElement(tag || 'div');
+        if (id) el.id = id;
+        if (classes.length > 0) el.classList = classes;
+        if (content instanceof Array) content.forEach((e) => el.append(e));
+        else if (content instanceof Element) el.append(content);
+        else if (typeof content === 'string' || content instanceof String) el.innerText = content;
+        if (attrs) {
+          for (const [name, val] of Object.entries(attrs)) {
+            if (name.startsWith('on')) el.addEventListener(name.slice(2), val);
+            else el[name] = val;
+          }
+        }
+        return el;
+      }
+
+      function handleYear(year) {
+        selectedYear = year;
+        let yearLink = document.getElementById('year-link');
+        yearLink.href = 'https://adventofcode.com/' + year;
+        yearLink.innerText = '' + year;
+
+        let yearData = data.get(year);
+        if (yearData === undefined) {
+          fetch(`json/${year}.json`)
+            .then((yearData) => yearData.json())
+            .then((yearData) => {
+              data.set(year, yearData);
+              showYearData(yearData);
+            });
+        } else {
+          showYearData(yearData);
+        }
+      }
+
+      function showYearData(yearData) {
+        const main = document.getElementById('main');
+        main.innerHTML = '';
+        const ranking = Object.entries(yearData).map(([name, val]) => {
+          return { ...val, name };
+        });
+        ranking.sort((a, b) => b.points - a.points);
+        for (const [i, v] of ranking.entries()) {
+          if (i === 0 || v.points !== ranking[i - 1].points) v.rank = i + 1;
+        }
+
+        const rankDigits = ranking.length.toString().length;
+        const pointsDigits = ranking[0].points.toString().length;
+        const elements = [];
+
+        for (const { name, points, img, rank } of ranking) {
+          elements.push(
+            h('.row', [
+              h('span.rank', (rank ? `${rank})` : '').padStart(rankDigits + 1)),
+              h('span.points', points.toString().padStart(pointsDigits)),
+              h(
+                'span.img',
+                img &&
+                  h('img', undefined, {
+                    src: location.origin.includes('localhost') ? TEST_IMG : img,
+                  })
+              ),
+              h('button.name', name, { onclick: () => showDetails(name) }),
+            ])
+          );
+        }
+        main.append(h('.leaderboard', elements));
+        main.append(h('#details'));
+      }
+
+      function showDetails(name) {
+        const details = data.get(selectedYear)[name];
+        const detailsEl = document.getElementById('details');
+        detailsEl.innerHTML = '';
+        const days = Array.from({ length: 25 }, (_, i) => [i + 1, 0, 0]);
+        for (const [day, part, rank] of details.ranks) {
+          if (part == 1) days[day - 1][1] = rank;
+          else days[day - 1][2] = rank;
+        }
+        detailsEl.append(
+          h(
+            '.details--list',
+            [
+              h('span', name),
+              h('table', [
+                h('tr', [h('th', 'Rank on'), h('th', 'Part 1'), h('th', 'Part 2')]),
+                ...days.map(([day, part1, part2]) =>
+                  h('tr', [
+                    h('td', `Day ${day.toString().padStart(2)}`),
+                    h('td', part1 && part1.toString()),
+                    h('td', part2 && part2.toString()),
+                  ])
+                ),
+              ]),
+            ],
+            { style: `position:relative;top:${window.scrollY}px` }
+          )
+        );
+      }
+
+      async function init() {
+        const meta = await fetch('json/meta.json').then((r) => r.json());
+
+        document
+          .getElementById('subtitle')
+          .append(h('span.last-updated', `Last updated: ${new Date(meta.updated).toLocaleString()}`));
+
+        const years = meta.years;
+        const yearsNav = document.getElementById('nav-years');
+        yearsNav.innerHTML = '';
+
+        for (const year of years)
+          yearsNav.appendChild(
+            h(
+              'li',
+              h('a', `[${year}]`, {
+                href: '#' + year,
+                onclick: () => handleYear(year),
+              })
+            )
+          );
+
+        if (location.hash.length === 5) {
+          const year = +location.hash.substring(1);
+          if (years[0] <= year && year <= years[years.length - 1]) {
+            handleYear(year);
+            return;
+          }
+        }
+
+        handleYear(years[years.length - 1]);
+      }
+
+      init();
+    </script>
+  </body>
+</html>
