@@ -147,9 +147,9 @@
       async function init() {
         const meta = await fetch('json/meta.json').then((r) => r.json());
 
-        document
-          .getElementById('subtitle')
-          .append(h('span.last-updated', `Last updated: ${new Date(meta.updated).toLocaleString()}`));
+        const subtitle = document.getElementById('subtitle');
+        subtitle.append(h('span.last-updated', `Last updated: ${new Date(meta.updated).toLocaleString()} &mdash; `));
+        subtitle.append(h('a', "Source", {href: "https://github.com/benediktwerner/aoc-leaderboard"}));
 
         const years = meta.years;
         const yearsNav = document.getElementById('nav-years');
