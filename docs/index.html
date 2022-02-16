@@ -148,7 +148,7 @@
         const meta = await fetch('json/meta.json').then((r) => r.json());
 
         const subtitle = document.getElementById('subtitle');
-        subtitle.append(h('span.last-updated', `Last updated: ${new Date(meta.updated).toLocaleString()} &mdash; `));
+        subtitle.append(h('span.last-updated', `Last updated: ${new Date(meta.updated).toLocaleString()} — `));
         subtitle.append(h('a', "Source", {href: "https://github.com/benediktwerner/aoc-leaderboard"}));
 
         const years = meta.years;
