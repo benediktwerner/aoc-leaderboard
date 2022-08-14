@@ -44,7 +44,7 @@ h2 {
 header {
   white-space: nowrap;
   z-index: 100;
-  margin-bottom: 2em;
+  margin-bottom: 1.5em;
 }
 header h1 {
   display: inline-block;
@@ -131,4 +131,8 @@ main {
 
 .last-updated {
   opacity: 0.5;
+}
+
+.note-click-on-user {
+  margin: 1.5em;
 }
