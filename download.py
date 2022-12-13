@@ -33,7 +33,7 @@ def download_year(year, max_day=25):
                 f.write(content.text)
             print("Done.")
 
-        time.sleep(30)
+        time.sleep(1)
 
 
 def main():
