@@ -91,6 +91,10 @@ main {
   flex-direction: row;
 }
 
+.leaderboard .row {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 24px;
+}
 .leaderboard .rank {
   white-space: pre;
 }
