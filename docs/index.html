@@ -105,6 +105,7 @@
                 'span.img',
                 img &&
                   h('img', undefined, {
+                    loading: 'lazy',
                     src: location.origin.includes('localhost') ? TEST_IMG : img,
                   })
               ),
