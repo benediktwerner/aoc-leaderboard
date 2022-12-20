@@ -62,7 +62,7 @@
         return el;
       }
 
-      function handleYear(year) {
+      function handleYear(year, updated) {
         selectedYear = year;
         let yearLink = document.getElementById('year-link');
         yearLink.href = 'https://adventofcode.com/' + year;
@@ -70,7 +70,7 @@
 
         let yearData = data.get(year);
         if (yearData === undefined) {
-          fetch(`json/${year}.json`)
+          fetch(`json/${year}.json?d=${updated}`)
             .then((yearData) => yearData.json())
             .then((yearData) => {
               data.set(year, yearData);
@@ -147,11 +147,12 @@
       }
 
       async function init() {
-        const meta = await fetch('json/meta.json').then((r) => r.json());
+        const meta = await fetch('json/meta.json?d=' + new Date()).then((r) => r.json());
+        const updated = new Date(meta.updated);
 
         const subtitle = document.getElementById('subtitle');
-        subtitle.append(h('span.last-updated', `Last updated: ${new Date(meta.updated).toLocaleString()} — `));
-        subtitle.append(h('a', "Source", {href: "https://github.com/benediktwerner/aoc-leaderboard"}));
+        subtitle.append(h('span.last-updated', `Last updated: ${updated.toLocaleString()} — `));
+        subtitle.append(h('a', 'Source', { href: 'https://github.com/benediktwerner/aoc-leaderboard' }));
 
         const years = meta.years;
         const yearsNav = document.getElementById('nav-years');
@@ -163,7 +164,7 @@
               'li',
               h('a', `[${year}]`, {
                 href: '#' + year,
-                onclick: () => handleYear(year),
+                onclick: () => handleYear(year, updated),
               })
             )
           );
@@ -171,12 +172,12 @@
         if (location.hash.length === 5) {
           const year = +location.hash.substring(1);
           if (years[0] <= year && year <= years[years.length - 1]) {
-            handleYear(year);
+            handleYear(year, updated);
             return;
           }
         }
 
-        handleYear(years[years.length - 1]);
+        handleYear(years[years.length - 1], updated);
       }
 
       init();
