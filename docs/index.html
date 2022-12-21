@@ -140,7 +140,7 @@
                     h('td', `Day ${day.toString().padStart(2)}`),
                     h('td' + cls, part1 && part1.toString()),
                     h('td' + cls, part2 && part2.toString()),
-                    strike ? h('td', 'This day was worth no points') : null,
+                    strike ? h('td.no-points', 'This day was worth no points') : null,
                   ]);
                 }),
               ]),

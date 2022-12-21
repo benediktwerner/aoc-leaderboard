@@ -144,3 +144,6 @@ main {
 .strike {
   text-decoration: line-through;
 }
+.no-points {
+  padding-left: 1em;
+}
