@@ -11,6 +11,8 @@ from collections import defaultdict
 DATA_DIR = "data"
 OUT_DIR = "docs/json"
 
+NO_POINTS = [(2020, 1), (2018, 6)]
+
 
 def parse_year(year):
     points = defaultdict(int)
@@ -46,7 +48,8 @@ def parse_year(year):
                     start = line.rfind("</span>") + len("</span>")
                     end = line.find("<", start)
                 name = line[start:end]
-                points[name] += 100 - i
+                if (year, day) not in NO_POINTS:
+                    points[name] += 100 - i
                 ranks[name].append((day, 2, i + 1))
                 img = re.search(r'<img src="(.+?)"', line)
                 if img:
@@ -60,7 +63,8 @@ def parse_year(year):
                     start = line.rfind("</span>") + len("</span>")
                     end = line.find("<", start)
                 name = html.unescape(line[start:end])
-                points[name] += 100 - i
+                if (year, day) not in NO_POINTS:
+                    points[name] += 100 - i
                 ranks[name].append((day, 1, i + 1))
                 img = re.search(r'<img src="(.+?)"', line)
                 if img:
@@ -90,12 +94,17 @@ def main():
 
     for year in years:
         print("Parsing year", year)
-        parse_year(year)
+        parse_year(int(year))
 
     path = os.path.join(OUT_DIR, "meta.json")
     with open(path, "w") as f:
         json.dump(
-            {"years": list(map(int, years)), "updated": int(time.time() * 1000)}, f
+            {
+                "years": list(map(int, years)),
+                "updated": int(time.time() * 1000),
+                "no_points": NO_POINTS,
+            },
+            f,
         )
 
     print(f"Written metadata to '{path}'")

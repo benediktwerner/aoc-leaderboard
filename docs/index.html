@@ -41,7 +41,7 @@
       const TEST_IMG =
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj4F548D8ABJUCbTs8eM0AAAAASUVORK5CYII=';
 
-      let selectedYear;
+      let selectedYear, meta;
       const data = new Map();
 
       function h(selector, content, attrs) {
@@ -50,7 +50,7 @@
         const el = document.createElement(tag || 'div');
         if (id) el.id = id;
         if (classes.length > 0) el.classList = classes;
-        if (content instanceof Array) content.forEach((e) => el.append(e));
+        if (content instanceof Array) content.filter(Boolean).forEach((e) => el.append(e));
         else if (content instanceof Element) el.append(content);
         else if (typeof content === 'string' || content instanceof String) el.innerText = content;
         if (attrs) {
@@ -64,11 +64,11 @@
 
       function handleYear(year, updated) {
         selectedYear = year;
-        let yearLink = document.getElementById('year-link');
+        const yearLink = document.getElementById('year-link');
         yearLink.href = 'https://adventofcode.com/' + year;
         yearLink.innerText = '' + year;
 
-        let yearData = data.get(year);
+        const yearData = data.get(year);
         if (yearData === undefined) {
           fetch(`json/${year}.json?d=${updated}`)
             .then((yearData) => yearData.json())
@@ -133,13 +133,16 @@
               h('span', name),
               h('table', [
                 h('tr', [h('th', 'Rank on'), h('th', 'Part 1'), h('th', 'Part 2')]),
-                ...days.map(([day, part1, part2]) =>
-                  h('tr', [
+                ...days.map(([day, part1, part2]) => {
+                  const strike = !!meta.no_points.find(([y, d]) => y === selectedYear && d === day);
+                  const cls = strike ? '.strike' : '';
+                  return h('tr', [
                     h('td', `Day ${day.toString().padStart(2)}`),
-                    h('td', part1 && part1.toString()),
-                    h('td', part2 && part2.toString()),
-                  ])
-                ),
+                    h('td' + cls, part1 && part1.toString()),
+                    h('td' + cls, part2 && part2.toString()),
+                    strike ? h('td', 'This day was worth no points') : null,
+                  ]);
+                }),
               ]),
             ],
             { style: `position:relative;top:${window.scrollY}px` }
@@ -148,7 +151,7 @@
       }
 
       async function init() {
-        const meta = await fetch('json/meta.json?d=' + new Date()).then((r) => r.json());
+        meta = await fetch('json/meta.json?d=' + new Date()).then((r) => r.json());
         const updated = new Date(meta.updated);
 
         const subtitle = document.getElementById('subtitle');

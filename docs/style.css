@@ -140,3 +140,7 @@ main {
 .note-click-on-user {
   margin: 1.5em;
 }
+
+.strike {
+  text-decoration: line-through;
+}
