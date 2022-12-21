@@ -47,7 +47,7 @@ def parse_year(year):
                 else:
                     start = line.rfind("</span>") + len("</span>")
                     end = line.find("<", start)
-                name = line[start:end]
+                name = html.unescape(line[start:end])
                 if (year, day) not in NO_POINTS:
                     points[name] += 100 - i
                 ranks[name].append((day, 2, i + 1))
