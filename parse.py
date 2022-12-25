@@ -14,10 +14,9 @@ OUT_DIR = "docs/json"
 NO_POINTS = [(2020, 1), (2018, 6)]
 
 
-def parse_year(year):
+def parse_year(year, users):
     points = defaultdict(int)
     ranks = defaultdict(list)
-    images = {}
 
     year_dir = os.path.join(DATA_DIR, str(year))
 
@@ -41,44 +40,45 @@ def parse_year(year):
             second = content[middle:end].split("\n")[:-1]
 
             for i, line in enumerate(first):
+                user_id = re.findall(r'data-user-id="(\d+)"', line)[0]
+                if (year, day) not in NO_POINTS:
+                    points[user_id] += 100 - i
+                ranks[user_id].append((day, 2, i + 1))
+
                 start = line.rfind("anonymous user")
                 if start != -1:
                     end = line.find(")", start)
                 else:
                     start = line.rfind("</span>") + len("</span>")
                     end = line.find("<", start)
-                name = html.unescape(line[start:end])
-                if (year, day) not in NO_POINTS:
-                    points[name] += 100 - i
-                ranks[name].append((day, 2, i + 1))
+                users[user_id]["name"] = html.unescape(line[start:end])
                 img = re.search(r'<img src="(.+?)"', line)
                 if img:
-                    images[name] = img[1]
+                    users[user_id]["img"] = img[1]
 
             for i, line in enumerate(second):
+                user_id = re.findall(r'data-user-id="(\d+)"', line)[0]
+                if (year, day) not in NO_POINTS:
+                    points[user_id] += 100 - i
+                ranks[user_id].append((day, 1, i + 1))
+
                 start = line.rfind("anonymous user")
                 if start != -1:
                     end = line.find(")", start)
                 else:
                     start = line.rfind("</span>") + len("</span>")
                     end = line.find("<", start)
-                name = html.unescape(line[start:end])
-                if (year, day) not in NO_POINTS:
-                    points[name] += 100 - i
-                ranks[name].append((day, 1, i + 1))
+                users[user_id]["name"] = html.unescape(line[start:end])
                 img = re.search(r'<img src="(.+?)"', line)
                 if img:
-                    images[name] = img[1]
+                    users[user_id]["img"] = img[1]
 
     people = {}
-    for name in points.keys():
-        person = {
-            "points": points[name],
-            "ranks": ranks[name],
+    for user_id in points.keys():
+        people[user_id] = {
+            "points": points[user_id],
+            "ranks": ranks[user_id],
         }
-        if img := images.get(name):
-            person["img"] = img
-        people[name] = person
 
     path = os.path.join(OUT_DIR, f"{year}.json")
     with open(path, "w") as f:
@@ -91,10 +91,11 @@ def main():
     os.makedirs(OUT_DIR, exist_ok=True)
 
     years = os.listdir(DATA_DIR)
+    users = defaultdict(dict)
 
     for year in years:
         print("Parsing year", year)
-        parse_year(int(year))
+        parse_year(int(year), users)
 
     path = os.path.join(OUT_DIR, "meta.json")
     with open(path, "w") as f:
@@ -103,6 +104,7 @@ def main():
                 "years": list(map(int, years)),
                 "updated": int(time.time() * 1000),
                 "no_points": NO_POINTS,
+                "users": users,
             },
             f,
         )
