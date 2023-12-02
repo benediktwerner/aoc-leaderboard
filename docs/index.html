@@ -9,14 +9,20 @@
       type="text/css"
     />
     <link rel="stylesheet" type="text/css" href="style.css" />
-    <link rel="stylesheet alternate" type="text/css" href="highcontrast.css" title="High Contrast" />
+    <link
+      rel="stylesheet alternate"
+      type="text/css"
+      href="highcontrast.css"
+      title="High Contrast"
+    />
     <link rel="shortcut icon" href="favicon.png" />
   </head>
   <body>
     <header>
       <div>
         <h1 class="title-global">
-          <a href="https://adventofcode.com" target="_blank">Advent of Code</a> Unofficial Leaderboard
+          <a href="https://adventofcode.com" target="_blank">Advent of Code</a>
+          Unofficial Leaderboard
         </h1>
         <nav>
           <ul id="nav-years">
@@ -26,36 +32,45 @@
       </div>
       <div id="subtitle">
         <h1 class="title-event">
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="title-event-wrap">/*</span>
-          <a id="year-link" href="https://adventofcode.com/2021" target="_blank">20??</a>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="title-event-wrap"
+            >/*</span
+          >
+          <a id="year-link" href="https://adventofcode.com/2021" target="_blank"
+            >20??</a
+          >
           <span class="title-event-wrap">*/</span>
         </h1>
       </div>
     </header>
 
-    <p class="note-click-on-user">Click on a username to see their results for each day</p>
+    <p class="note-click-on-user">
+      Click on a username to see their results for each day
+    </p>
 
     <main id="main"></main>
 
     <script>
       const TEST_IMG =
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj4F548D8ABJUCbTs8eM0AAAAASUVORK5CYII=';
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj4F548D8ABJUCbTs8eM0AAAAASUVORK5CYII=";
 
       let selectedYear, meta;
       const data = new Map();
 
       function h(selector, content, attrs) {
-        const [tagId, ...classes] = selector.split('.');
-        const [tag, id] = tagId.split('#');
-        const el = document.createElement(tag || 'div');
+        const [tagId, ...classes] = selector.split(".");
+        const [tag, id] = tagId.split("#");
+        const el = document.createElement(tag || "div");
         if (id) el.id = id;
         if (classes.length > 0) el.classList = classes;
-        if (content instanceof Array) content.filter(Boolean).forEach((e) => el.append(e));
+        if (content instanceof Array)
+          content.filter(Boolean).forEach((e) => el.append(e));
         else if (content instanceof Element) el.append(content);
-        else if (typeof content === 'string' || content instanceof String) el.innerText = content;
+        else if (typeof content === "string" || content instanceof String)
+          el.innerText = content;
         if (attrs) {
           for (const [name, val] of Object.entries(attrs)) {
-            if (name.startsWith('on')) el.addEventListener(name.slice(2), val);
+            if (name.startsWith("on")) el.addEventListener(name.slice(2), val);
             else el[name] = val;
           }
         }
@@ -64,9 +79,9 @@
 
       function handleYear(year, updated) {
         selectedYear = year;
-        const yearLink = document.getElementById('year-link');
-        yearLink.href = 'https://adventofcode.com/' + year;
-        yearLink.innerText = '' + year;
+        const yearLink = document.getElementById("year-link");
+        yearLink.href = "https://adventofcode.com/" + year;
+        yearLink.innerText = "" + year;
 
         const yearData = data.get(year);
         if (yearData === undefined) {
@@ -82,8 +97,8 @@
       }
 
       function showYearData(yearData) {
-        const main = document.getElementById('main');
-        main.innerHTML = '';
+        const main = document.getElementById("main");
+        main.innerHTML = "";
         const ranking = Object.entries(yearData)
           .map(([id, val]) => {
             return { ...val, id };
@@ -100,49 +115,56 @@
         for (const { id, points, rank } of ranking) {
           const { name, img } = meta.users[id];
           elements.push(
-            h('.row', [
-              h('span.rank', (rank ? `${rank})` : '').padStart(rankDigits + 1)),
-              h('span.points', points.toString().padStart(pointsDigits)),
+            h(".row", [
+              h("span.rank", (rank ? `${rank})` : "").padStart(rankDigits + 1)),
+              h("span.points", points.toString().padStart(pointsDigits)),
               h(
-                'span.img',
+                "span.img",
                 img &&
-                  h('img', undefined, {
-                    loading: 'lazy',
-                    src: location.origin.includes('localhost') ? TEST_IMG : img,
+                  h("img", undefined, {
+                    loading: "lazy",
+                    src: location.origin.includes("localhost") ? TEST_IMG : img,
                   })
               ),
-              h('button.name', name, { onclick: () => showDetails(id) }),
+              h("button.name", name, { onclick: () => showDetails(id) }),
             ])
           );
         }
-        main.append(h('.leaderboard', elements));
-        main.append(h('#details'));
+        main.append(h(".leaderboard", elements));
+        main.append(h("#details"));
       }
 
       function showDetails(id) {
         const details = data.get(selectedYear)[id];
-        const detailsEl = document.getElementById('details');
-        detailsEl.innerHTML = '';
+        const detailsEl = document.getElementById("details");
+        detailsEl.innerHTML = "";
         const days = Array.from({ length: 25 }, (_, i) => [i + 1, 0, 0]);
         for (const [day, part, rank] of details.ranks) {
-          if (part == 1) days[day - 1][1] = rank;
-          else days[day - 1][2] = rank;
+          days[day - 1][part] = rank;
         }
         detailsEl.append(
           h(
-            '.details--list',
+            ".details--list",
             [
-              h('span', meta.users[id].name),
-              h('table', [
-                h('tr', [h('th', 'Rank on'), h('th', 'Part 1'), h('th', 'Part 2')]),
+              h("span", meta.users[id].name),
+              h("table", [
+                h("tr", [
+                  h("th", "Rank on"),
+                  h("th", "Part 1"),
+                  h("th", "Part 2"),
+                ]),
                 ...days.map(([day, part1, part2]) => {
-                  const strike = !!meta.no_points.find(([y, d]) => y === selectedYear && d === day);
-                  const cls = strike ? '.strike' : '';
-                  return h('tr', [
-                    h('td', `Day ${day.toString().padStart(2)}`),
-                    h('td' + cls, part1 && part1.toString()),
-                    h('td' + cls, part2 && part2.toString()),
-                    strike ? h('td.no-points', 'This day was worth no points') : null,
+                  const strike = !!meta.no_points.find(
+                    ([y, d]) => y === selectedYear && d === day
+                  );
+                  const cls = strike ? ".strike" : "";
+                  return h("tr", [
+                    h("td", `Day ${day.toString().padStart(2)}`),
+                    h("td" + cls, part1 && part1.toString()),
+                    h("td" + cls, part2 && part2.toString()),
+                    strike
+                      ? h("td.no-points", "This day was worth no points")
+                      : null,
                   ]);
                 }),
               ]),
@@ -153,23 +175,31 @@
       }
 
       async function init() {
-        meta = await fetch('json/meta.json?d=' + new Date()).then((r) => r.json());
+        meta = await fetch("json/meta.json?d=" + new Date()).then((r) =>
+          r.json()
+        );
         const updated = new Date(meta.updated);
 
-        const subtitle = document.getElementById('subtitle');
-        subtitle.append(h('span.last-updated', `Last updated: ${updated.toLocaleString()} — `));
-        subtitle.append(h('a', 'Source', { href: 'https://github.com/benediktwerner/aoc-leaderboard' }));
+        const subtitle = document.getElementById("subtitle");
+        subtitle.append(
+          h("span.last-updated", `Last updated: ${updated.toLocaleString()} — `)
+        );
+        subtitle.append(
+          h("a", "Source", {
+            href: "https://github.com/benediktwerner/aoc-leaderboard",
+          })
+        );
 
         const years = meta.years;
-        const yearsNav = document.getElementById('nav-years');
-        yearsNav.innerHTML = '';
+        const yearsNav = document.getElementById("nav-years");
+        yearsNav.innerHTML = "";
 
         for (const year of years)
           yearsNav.appendChild(
             h(
-              'li',
-              h('a', `[${year}]`, {
-                href: '#' + year,
+              "li",
+              h("a", `[${year}]`, {
+                href: "#" + year,
                 onclick: () => handleYear(year, updated),
               })
             )
