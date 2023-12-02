@@ -90,7 +90,7 @@ def parse_year(year, users):
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
 
-    years = os.listdir(DATA_DIR)
+    years = sorted(os.listdir(DATA_DIR))
     users = defaultdict(dict)
 
     for year in years:
